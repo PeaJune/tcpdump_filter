@@ -51,6 +51,8 @@ __RCSID("$NetBSD: print-tcp.c,v 1.8 2007/07/24 11:53:48 drochner Exp $");
 #include "rpc_auth.h"
 #include "rpc_msg.h"
 
+#include "filter_data.h"
+
 #ifdef HAVE_LIBCRYPTO
 #include <openssl/md5.h>
 #include "signature.h"
@@ -156,6 +158,7 @@ tcp6_cksum(netdissect_options *ndo,
 				IPPROTO_TCP);
 }
 
+extern FILE *output_data_fp;
 void
 tcp_print(netdissect_options *ndo,
           register const u_char *bp, register u_int length,
@@ -172,6 +175,16 @@ tcp_print(netdissect_options *ndo,
         uint16_t magic;
         register int rev;
         register const struct ip6_hdr *ip6;
+	FILE *t_fp = NULL;
+	int	d_i = 0;
+	const u_char *tcp_data = NULL;
+
+	if(output_data_fp == NULL)
+	{
+		t_fp = stdout;
+	}else{
+		t_fp = output_data_fp;
+	}
 
         tp = (const struct tcphdr *)bp;
         ip = (const struct ip *)bp2;
@@ -223,6 +236,7 @@ tcp_print(netdissect_options *ndo,
                              length - hlen, hlen, (unsigned long)sizeof(*tp)));
                 return;
         }
+
 
         seq = EXTRACT_32BITS(&tp->th_seq);
         ack = EXTRACT_32BITS(&tp->th_ack);
@@ -405,6 +419,32 @@ tcp_print(netdissect_options *ndo,
                         ND_PRINT((ndo, ":%u", seq + length));
                 }
         }
+	tcp_data = bp + hlen;
+
+	if(find_filter_node(length, tcp_data) != 1)
+	{
+		/*display in ascii*/
+		if(ndo->ndo_Xflag == 3)
+		{
+			for(d_i=0; d_i<length; d_i++)
+			{
+				fprintf(t_fp, "%c", tcp_data[d_i]);
+			}
+			if(length != 0)
+				fprintf(t_fp, "\n");
+		}
+		
+		/*display in hex*/
+		if(ndo->ndo_xflag == 3 || ndo->ndo_Xflag != 3)
+		{
+			for(d_i=0; d_i<length; d_i++)
+			{
+				fprintf(t_fp, "%02hhx", tcp_data[d_i]);
+			}
+			if(length != 0)
+				fprintf(t_fp, "\n");
+		}	
+	}
 
         if (flags & TH_ACK) {
                 ND_PRINT((ndo, ", ack %u", ack));

@@ -340,7 +340,11 @@ pretty_print_packet(netdissect_options *ndo, const struct pcap_pkthdr *h,
 		/*
 		 * Print the raw packet data in hex and ASCII.
 		 */
-		if (ndo->ndo_Xflag > 1) {
+		if(ndo->ndo_Xflag == 3)
+		{
+			/*output udp or tcp data to file(in ASCII)*/
+		}
+		else if (ndo->ndo_Xflag == 2) {
 			/*
 			 * Include the link-layer header.
 			 */
@@ -359,7 +363,11 @@ pretty_print_packet(netdissect_options *ndo, const struct pcap_pkthdr *h,
 		/*
 		 * Print the raw packet data in hex.
 		 */
-		if (ndo->ndo_xflag > 1) {
+		if(ndo->ndo_xflag == 3)
+		{
+			/*output udp or tcp data to file(in hex)*/
+		}
+		else if (ndo->ndo_xflag == 2) {
 			/*
 			 * Include the link-layer header.
 			 */

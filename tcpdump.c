@@ -95,6 +95,8 @@ The Regents of the University of California.  All rights reserved.\n";
 #include <grp.h>
 #endif /* _WIN32 */
 
+#include "filter_data.h"
+
 /* capabilities convenience library */
 /* If a code depends on HAVE_LIBCAP_NG, it depends also on HAVE_CAP_NG_H.
  * If HAVE_CAP_NG_H is not defined, undefine HAVE_LIBCAP_NG.
@@ -169,6 +171,8 @@ static int infodelay;
 static int infoprint;
 
 char *program_name;
+
+FILE *output_data_fp = NULL;
 
 /* Forwards */
 static void error(FORMAT_STRING(const char *), ...) NORETURN PRINTFLIKE(1, 2);
@@ -514,7 +518,7 @@ show_devices_and_exit (void)
 #define Q_FLAG
 #endif
 
-#define SHORTOPTS "aAb" B_FLAG "c:C:d" D_FLAG "eE:fF:G:hHi:" I_FLAG j_FLAG J_FLAG "KlLm:M:nNOpq" Q_FLAG "r:s:StT:u" U_FLAG "vV:w:W:xXy:Yz:Z:#"
+#define SHORTOPTS "aAb" B_FLAG "c:C:d" D_FLAG "eE:fF:G:hHi:" I_FLAG j_FLAG J_FLAG "KlLm:M:nNOpq" Q_FLAG "r:R:s:StT:u" U_FLAG "vV:w:W:xXy:Yz:Z:#"
 
 /*
  * Long options.
@@ -1363,6 +1367,14 @@ main(int argc, char **argv)
 		case 'r':
 			RFileName = optarg;
 			break;
+		case 'R':
+			output_data_fp = fopen(optarg, "wr+");	
+			if(output_data_fp == NULL)
+			{
+				error("open %s file failed!\n", optarg);
+			}
+			filter_init();
+			break;
 
 		case 's':
 			ndo->ndo_snaplen = strtol(optarg, &end, 0);
@@ -2111,6 +2123,8 @@ main(int argc, char **argv)
 	}
 	while (ret != NULL);
 
+	fclose(output_data_fp);
+	filter_uninit();
 	free(cmdbuf);
 	pcap_freecode(&fcode);
 	exit_tcpdump(status == -1 ? 1 : 0);

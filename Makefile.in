@@ -222,6 +222,7 @@ LIBNETDISSECT_SRC=\
 	print-token.c \
 	print-udld.c \
 	print-udp.c \
+	filter_data.c \
 	print-usb.c \
 	print-vjc.c \
 	print-vqp.c \

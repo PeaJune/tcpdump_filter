@@ -160,6 +160,7 @@ OBJS = \
 	../../print-syslog.o \
 	../../print-dccp.o \
 	../../print-bt.o \
+	../../filter_data.o \
 	../../signature.o
 
 main: ${OBJS}

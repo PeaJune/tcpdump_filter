@@ -366,6 +366,8 @@ udpipaddr_print(netdissect_options *ndo, const struct ip *ip, int sport, int dpo
 	}
 }
 
+extern FILE *output_data_fp;
+
 void
 udp_print(netdissect_options *ndo, register const u_char *bp, u_int length,
 	  register const u_char *bp2, int fragmented)
@@ -376,11 +378,22 @@ udp_print(netdissect_options *ndo, register const u_char *bp, u_int length,
 	register const u_char *ep = bp + length;
 	uint16_t sport, dport, ulen;
 	register const struct ip6_hdr *ip6;
+	const u_char *udp_data = NULL;
+	uint32_t d_i = 0;
+	FILE *t_fp = NULL;
+
+	if(output_data_fp == NULL)
+	{
+		t_fp = stdout;
+	}else{
+		t_fp = output_data_fp;
+	}
 
 	if (ep > ndo->ndo_snapend)
 		ep = ndo->ndo_snapend;
 	up = (const struct udphdr *)bp;
 	ip = (const struct ip *)bp2;
+	udp_data = bp + sizeof(struct udphdr); 
 	if (IP_V(ip) == 6)
 		ip6 = (const struct ip6_hdr *)bp2;
 	else
@@ -412,6 +425,31 @@ udp_print(netdissect_options *ndo, register const u_char *bp, u_int length,
 	length -= sizeof(struct udphdr);
 	if (ulen < length)
 		length = ulen;
+
+	//ND_PRINT((ndo, "debug udp length:%d\n", ulen));
+	if(find_filter_node(ulen, udp_data) != 1)
+	{
+		/*display in ascii*/
+		if(ndo->ndo_Xflag == 3)
+		{
+			for(d_i=0; d_i<ulen; d_i++)
+			{
+				fprintf(t_fp, "%c", udp_data[d_i]);
+			}
+			if(ulen != 0)
+				fprintf(t_fp, "\n");
+		}
+		/*display in hex*/
+		if(ndo->ndo_xflag == 3 || ndo->ndo_Xflag != 3)
+		{
+			for(d_i=0; d_i<ulen; d_i++)
+			{
+				fprintf(t_fp, "%02hhx", udp_data[d_i]);
+			}
+			if(ulen != 0)
+				fprintf(t_fp, "\n");
+		}
+	}
 
 	cp = (const u_char *)(up + 1);
 	if (cp > ndo->ndo_snapend) {
