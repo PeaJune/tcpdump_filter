@@ -1,0 +1,16 @@
+Build changes for GNU/Hurd.
+
+--- a/netdissect-stdinc.h
++++ b/netdissect-stdinc.h
+@@ -199,7 +199,11 @@
+ #elif HAVE_STDINT_H
+ #include <stdint.h>
+ #endif
++#ifndef __GNU__
+ #include <sys/param.h>
++#else
++#include <rpc/types.h>
++#endif
+ #include <sys/types.h>			/* concession to AIX */
+ #include <sys/time.h>
+ #include <sys/socket.h>
