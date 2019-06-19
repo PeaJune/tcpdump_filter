@@ -1,0 +1,4 @@
+useage:
+  -R    : output tcp/udp data file
+  -xxx  : output data in hex
+  -XXX  : output data in ascii
